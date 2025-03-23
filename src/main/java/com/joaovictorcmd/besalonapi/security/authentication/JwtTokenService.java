@@ -19,10 +19,10 @@ import java.time.temporal.ChronoUnit;
 public class JwtTokenService {
 
     @Value("${jwt.secret-key}")
-    private static String secretKey;
+    private String secretKey;
 
     @Value("${jwt.issuer}")
-    private static String issuer;
+    private String issuer;
 
     public String generateToken(UserDetailsImpl user) {
 

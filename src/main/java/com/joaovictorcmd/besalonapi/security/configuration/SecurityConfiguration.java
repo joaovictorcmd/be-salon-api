@@ -26,14 +26,12 @@ public class SecurityConfiguration {
 
     private final UserAuthenticationFilter userAuthenticationFilter;
 
-    public static final String[] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
-            "/auth/login",
-            "/auth/register"
+    public static final String[] PUBLIC_ENDPOINTS = {
+            "/auth/**"
     };
     public static final String[] ENDPOINTS_CUSTOMER = {};
     public static final String[] ENDPOINTS_EMPLOYEE = {};
     public static final String[] ENDPOINTS_ADMIN = {};
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -41,7 +39,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(ENDPOINTS_CUSTOMER).hasRole("CUSTOMER")
                         .requestMatchers(ENDPOINTS_EMPLOYEE).hasRole("EMPLOYEE")
                         .requestMatchers(ENDPOINTS_ADMIN).hasRole("ADMIN")

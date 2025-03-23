@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * @author joaovictorcmd
@@ -36,7 +36,11 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
 
             if (token != null) {
                 String subject = jwtTokenService.getSubjectFromToken(token);
-                User user = userRepository.findByEmail(subject).get();
+
+                User user = userRepository.findByEmail(subject).orElseThrow(
+                        () -> new UsernameNotFoundException("User " + subject + " not found")
+                );
+
                 UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -44,8 +48,6 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                throw new RuntimeException("Token is missing");
             }
         }
         filterChain.doFilter(request, response);
@@ -53,7 +55,13 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isEndpointPublic(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        return Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).contains(requestURI);
+
+        for (String endpoint : SecurityConfiguration.PUBLIC_ENDPOINTS) {
+            if (requestURI.equals(endpoint) || requestURI.startsWith(endpoint + "/")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String recoveryToken(HttpServletRequest request) {
