@@ -2,6 +2,8 @@ package com.joaovictorcmd.besalonapi.controllers;
 
 import com.joaovictorcmd.besalonapi.dto.input.UserLoginRequestDTO;
 import com.joaovictorcmd.besalonapi.dto.input.UserRegisterRequestDTO;
+import com.joaovictorcmd.besalonapi.dto.output.ApiSuccessResponse;
+import com.joaovictorcmd.besalonapi.dto.output.UserDTO;
 import com.joaovictorcmd.besalonapi.dto.output.UserLoginResponseDTO;
 import com.joaovictorcmd.besalonapi.services.UserService;
 import jakarta.validation.Valid;
@@ -25,16 +27,30 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/login")
-    public ResponseEntity<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginRequestDTO data) {
-        UserLoginResponseDTO userLoginResponseDTO = userService.login(data);
+    @PostMapping("/register")
+    public ResponseEntity<ApiSuccessResponse> register(@Valid @RequestBody UserRegisterRequestDTO data) {
+        UserDTO userDTO = userService.register(data);
 
-        return ResponseEntity.ok(userLoginResponseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        new ApiSuccessResponse<>(
+                                HttpStatus.CREATED.value(),
+                                "User registered successfully",
+                                userDTO
+                        )
+                );
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<Void> register(@Valid @RequestBody UserRegisterRequestDTO data) {
-        userService.register(data);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @PostMapping("/login")
+    public ResponseEntity<ApiSuccessResponse> login(@Valid @RequestBody UserLoginRequestDTO data) {
+        UserLoginResponseDTO userLoginResponseDTO = userService.login(data);
+
+        return ResponseEntity.ok(
+                new ApiSuccessResponse<>(
+                        HttpStatus.OK.value(),
+                        "Login successful",
+                        userLoginResponseDTO
+                )
+        );
     }
 }
